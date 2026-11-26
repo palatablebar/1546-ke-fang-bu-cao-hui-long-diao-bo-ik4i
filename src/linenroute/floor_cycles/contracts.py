@@ -35,7 +35,7 @@ class WindowRule:
         return ('train', self.train), ('calibration', self.calibration), ('replay', self.replay)
 
     @classmethod
-    def standard(cls, *, allow_censor=False):
+    def standard(cls, *, allow_censor=True):
         train, switch, calibrate, lock, replay, replay_end, shift = (2, 40, 43, 62, 65, 84, 88)
         return cls(Span(train,switch),Span(calibrate,lock),Span(replay,replay_end),Span(shift,3651),96,allow_censor)
 

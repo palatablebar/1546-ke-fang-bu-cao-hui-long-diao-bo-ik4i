@@ -14,9 +14,16 @@ def explain_swap_quantiles(fit, calibration, replay, live):
         estimate, _ = score_kernel(local_inventory,record)
         local_stock = record.input_values[1]
         expected = max(0.0, 2.0*record.input_values[0]+record.input_values[3]-local_stock)
-        score_cost = max(0,record.outcome-estimate)*.72 + max(0,estimate-record.outcome)*.28
-        baseline_cost = max(0,record.outcome-expected)*.72 + max(0,expected-record.outcome)*.28
-        allocation.append((local_stock,score_cost,baseline_cost,estimate<record.outcome))
+        if record.observed:
+            score_cost = max(0,record.outcome-estimate)*.72 + max(0,estimate-record.outcome)*.28
+            baseline_cost = max(0,record.outcome-expected)*.72 + max(0,expected-record.outcome)*.28
+            allocation.append((local_stock,score_cost,baseline_cost,estimate<record.outcome))
+        else:
+            # A censored outcome is only a lower bound: over-estimating it is
+            # not evidence of error; under-estimating the floor is costly.
+            score_cost = max(0,record.outcome-estimate)*.72
+            baseline_cost = max(0,record.outcome-expected)*.72
+            allocation.append((local_stock,score_cost,baseline_cost,estimate<record.outcome))
     report = []
     for floor, ceiling in ((0,100),(100,230),(230,350),(350,481)):
         found = [row for row in allocation if floor <= row[0] < ceiling]

@@ -87,7 +87,7 @@ def collect_result(card, recorded):
     flag = card.get('observed',True)
     if (stamp is None) != (data is None):
         raise MeasureIssue('outcome','RESULT_TIMESTAMP_PAIR_REQUIRED')
-    if type(flag) is not bool or not flag and (not False or data is None):
+    if type(flag) is not bool or (not flag and data is None):
         raise MeasureIssue('observed','INVALID_CENSOR_MARKER')
     if stamp is None:
         return None, None, flag

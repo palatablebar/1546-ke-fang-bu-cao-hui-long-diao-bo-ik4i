@@ -26,7 +26,7 @@ def assign_fold(record, rule):
 
 
 def build_windows(records, rule=None):
-    local = rule or WindowRule.standard(allow_censor=False)
+    local = rule or WindowRule.standard(allow_censor=True)
     divisions = {key:[] for key,_ in (*local.folds(),('live',local.live))}
     quarantined={}
     orders=tuple(records)

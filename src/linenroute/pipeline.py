@@ -89,7 +89,7 @@ def execute(documents, capacity=12, mode='balanced', *, as_of=96):
     if not documents or len(documents)>2500:
         raise ValueError('单次提交限 1–2500 张单据')
     intake = intake_service.load_samples(iter(documents),as_of)
-    timeline=window_contract.WindowRule.standard(allow_censor=False)
+    timeline=window_contract.WindowRule.standard(allow_censor=True)
     windows=cohort_service.build_windows(intake.entries,replace(timeline,as_of=as_of))
     cohort_service.model_inputs(windows)
     state = feature_service.fit_features(windows.train)

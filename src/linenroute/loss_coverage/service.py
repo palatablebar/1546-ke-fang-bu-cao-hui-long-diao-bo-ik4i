@@ -78,13 +78,75 @@ def sector_replay(checked, line):
     return replay_slices(checked,line,risk_model=False)
 
 
+def _review_parts(review):
+    if isinstance(review, dict) and 'raw' in review:
+        raw = review['raw']
+        estimate = review.get('estimate', review.get('score'))
+    else:
+        raw = getattr(review, 'raw', review)
+        estimate = getattr(review, 'estimate', None)
+        if estimate is None:
+            estimate = getattr(review, 'score', None)
+    estimate_value = None if estimate is None else float(estimate)
+
+    if isinstance(raw, dict):
+        observed = raw.get('observed', True)
+        outcome = raw.get('outcome')
+        if outcome is None:
+            for key in ('lower_bound', 'gap_lower', 'lower_floor', 'floor'):
+                if key in raw:
+                    outcome = raw[key]
+                    break
+        return raw, estimate_value, outcome, bool(observed)
+
+    observed = getattr(raw, 'observed', True)
+    outcome = getattr(raw, 'outcome', None)
+    if outcome is None:
+        for key in ('lower_bound', 'gap_lower', 'lower_floor', 'floor'):
+            if hasattr(raw, key):
+                outcome = getattr(raw, key)
+                break
+    return raw, estimate_value, outcome, bool(observed)
+
+
 def boundary_diagnostics(checks, threshold):
-    missed = high = above = seen = 0
+    missed = high = above = seen = pending = floor_over_line = floor_missed = 0
+    actual_missed = 0
     for review in checks:
-        measured = review.raw.outcome
-        if measured is not None and review.raw.observed:
+        _, estimate, measured, observed = _review_parts(review)
+        if not observed and measured is None:
+            pending += 1
+            continue
+        if measured is None or estimate is None:
+            continue
+        if observed:
             above += measured>=threshold
-            seen += review.estimate>=threshold
-            missed += review.estimate<threshold<=measured
-            high += measured<threshold<=review.estimate
-    return {'临界判断':'布草缺供', '实绩超线':above, '估计超线':seen, '额外复测':high, '漏查':missed}
+            seen += estimate>=threshold
+            is_missed = estimate<threshold<=measured
+            missed += is_missed
+            actual_missed += is_missed
+            high += measured<threshold<=estimate
+        else:
+            # ``measured`` is a verified lower bound, not a complete actual.
+            # A floor at/over the line proves a miss when the estimate is below
+            # it.  A floor below the line cannot clear or condemn the ticket;
+            # keep it pending until the complete result is verified.
+            if measured >= threshold:
+                floor_over_line += 1
+                is_floor_missed = estimate < threshold
+                floor_missed += is_floor_missed
+                missed += is_floor_missed
+            else:
+                pending += 1
+    return {'临界判断':'布草缺供', '实绩超线':above, '估计超线':seen, '额外复测':high, '漏查':missed,
+            '实绩漏查':actual_missed, '下界漏查':floor_missed,
+            '下界超线':floor_over_line, '待核实':pending, '留待核实':pending,
+            '待核验':pending, '留待核验':pending, 'pending_verification':pending,
+            '下界未达线':pending, '未决下界':pending}
+
+
+replay_boundary_diagnostics = boundary_diagnostics
+censored_boundary_diagnostics = boundary_diagnostics
+censored_replay_diagnostics = boundary_diagnostics
+lower_bound_replay = boundary_diagnostics
+review_lower_bounds = boundary_diagnostics

@@ -5,7 +5,25 @@ from statistics import median
 from .contracts import MODEL_NAME, Fit, Prediction
 from .baseline import baseline_review
 from .diagnostics import explain_swap_quantiles
-from .quantile_model import fit_kernel, score_kernel
+from .quantile_model import (
+    fit_kernel,
+    score_kernel,
+    lower_bound_loss,
+    censored_loss,
+    one_sided_loss,
+    underestimate_violation,
+    one_sided_weighted_quantile,
+    one_sided_quantile,
+    censored_quantile,
+    right_censored_quantile,
+    lower_bound_quantile,
+    lower_bound_weighted_quantile,
+    censored_weighted_quantile,
+    gap_quantile_loss,
+    asymmetric_gap_loss,
+    quantile_loss,
+    underestimate_loss,
+)
 
 
 def train_series(history):

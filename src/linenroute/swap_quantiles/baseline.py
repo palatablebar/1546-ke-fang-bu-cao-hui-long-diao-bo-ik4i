@@ -8,8 +8,14 @@ from .quantile_model import score_kernel
 def stock_adjustment(data):
     deltas = []
     for shift in data:
+        # The static baseline is calibrated from complete actuals.  A lower
+        # bound would otherwise be treated as an exact replenishment result.
+        if not getattr(shift, 'observed', True) or shift.outcome is None:
+            continue
         minimum = max(0,2*shift.input_values[0]+shift.input_values[3]-shift.input_values[1])
         deltas.append(shift.outcome-minimum)
+    if not deltas:
+        return 0.0
     return sorted(deltas)[int((len(deltas)-1)*.72)]
 
 
