@@ -1,0 +1,24 @@
+{
+  "key": "LT-1101",
+  "cohort": "会展店",
+  "day": 2,
+  "received": 3,
+  "revision": 1,
+  "result_day": 5,
+  "outcome": 407.81571,
+  "observed": true,
+  "form": {
+    "退房交接": {
+      "checked_rooms": 158,
+      "available_pieces": 212
+    },
+    "净成品入笼": {
+      "truck_arrival_sec": 11520,
+      "reserved_towels": 55
+    },
+    "洗涤派车": {
+      "reject_basis_points": 1600,
+      "blocked_group_rooms": 29
+    }
+  }
+}
